@@ -13,6 +13,12 @@
     "yiisoft/yii2": "~2.0.13",
     "verot/class.upload.php": "dev-master"
   },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/verot/class.upload.php.git"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "mirocow\\imagecache\\": ""
