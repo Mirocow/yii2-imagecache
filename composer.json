@@ -1,0 +1,21 @@
+{
+  "name": "mirocow/yii2-imagecache",
+  "description": "Yii2 imagecache extension",
+  "type": "yii2-extension",
+  "license": "GPL-v3",
+  "support": {
+    "issues": "https://github.com/mirocow/yii2-imagecache",
+    "source": "https://github.com/mirocow/yii2-imagecache"
+  },
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.4.0",
+    "yiisoft/yii2": ">=2.0.13",
+    "verot/class.upload.php": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "mirocow\\imagecache\\": ""
+    }
+  }
+}
