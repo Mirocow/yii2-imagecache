@@ -5,10 +5,13 @@ namespace mirocow\imagecache\components;
 use Yii;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class Image
  * @package app\modules\imageapi\components
+ *
+ * @see https://www.verot.net/php_class_upload_samples.htm
  */
 class Image extends Component
 {
@@ -109,7 +112,13 @@ class Image extends Component
             ' - ' => '-',
             '/' => '-',
             '  ' => '-',
-        ];        
+        ];
+
+        if(!isset($this->presets['original'])){
+            $this->presets['original'] = [
+                'cachePath' => '@webroot/images/original',
+            ];
+        }
         
         parent::init();
     }
@@ -120,11 +129,12 @@ class Image extends Component
      *
      * @param $file origin image file to create the derived image
      * @param $presetName Name of the preset declared in configuration under presets array
+     * @see https://www.verot.net/php_class_upload_samples.htm
      * in the way:
      * <pre>
      *    '640x480' => [
      *      'cachePath' => '@webroot/images/640x480',
-     *      'actions' => [ 'scaleAndCrop' => ['width' => 640, 'height' => 480] ],
+     *      'actions' => ['image_x' => 640, 'image_y' => 480, 'image_ratio_crop' => true],
      *    ],
      * </pre>
      *
@@ -133,14 +143,13 @@ class Image extends Component
      */
     public function createUrl($file, $presetName = 'original')
     {
+        if(!$file){
+            throw new NotFoundHttpException(Yii::t('app',  'File {name} not foud', ['name' => $file]));
+        }
 
         $webrootPath = Yii::getAlias('@webroot');
 
-        if (!file_exists($file)) {
-            $file = $webrootPath . $file;
-        }
-
-        $targetPath = $this->createPath($presetName, $file, true);
+        $targetPath = $this->createPath($webrootPath . $file, $presetName, true);
 
         if (strpos($targetPath, $webrootPath) !== false) {
             $targetPath = substr($targetPath, strlen($webrootPath));
@@ -155,18 +164,19 @@ class Image extends Component
      *
      * @param $file origin image file to create the derived image
      * @param $presetName Name of the preset declared in configuration under presets array
+     * @see https://www.verot.net/php_class_upload_samples.htm
      * in the way:
      * <pre>
      *    '640x480' => [
      *      'cachePath' => '@webroot/images/640x480',
-     *      'actions' => [ 'scaleAndCrop' => ['width' => 640, 'height' => 480] ],
+     *      'actions' => ['image_x' => 640, 'image_y' => 480, 'image_ratio_crop' => true],
      *    ],
      * </pre>
      *
      * @return the path to the cached derived image (if it does not exist it'll be generated
      *   transparently)
      */
-    public function createPath($file, $presetName, $onlyReturnPath = false)
+    public function createPath($file, $presetName = 'original', $onlyReturnPath = false)
     {
 
         if (!isset($this->presets[$presetName])) {
@@ -174,22 +184,26 @@ class Image extends Component
         }
 
         if (!file_exists($file)) {
-            return false;
+            //return false;
+            $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
         }
 
         $preset = $this->presets[$presetName];
 
+        $originalFile = $this->createImage($file);
+
         if (isset($preset)) {
 
-            $basename = basename($file);
+            $basename = basename($originalFile);
             $targetPath = Yii::getAlias($preset['cachePath']);
-            $targetFile = $targetPath . '/' . strtolower($basename);
 
-            if (!file_exists($targetPath)) {
-                mkdir($targetPath, 0777, true);
+            if (isset($preset['actions']['image_convert'])) {
+                $basename = pathinfo($basename, PATHINFO_FILENAME) . '.' . $preset['actions']['image_convert'];
             }
 
-            if ($onlyReturnPath || file_exists($targetFile)) {
+            $targetFile = $targetPath . '/' . $basename;
+
+            if ($onlyReturnPath && file_exists($originalFile)) {
 
                 return $targetFile;
 
@@ -198,15 +212,15 @@ class Image extends Component
                 if (isset($preset['actions'])) {
 
                     if (isset($preset['actions']['image_increase']) && $preset['actions']['image_increase'] === false) {
-                        $size = self::getSize($file);
+                        $size = self::getSize($originalFile);
                         if ($size[0] < $preset['actions']['image_x'] || $size[1] < $preset['actions']['image_y']) {
                             $preset['actions']['image_resize'] = false;
                         }
                     }
 
-                    $this->createHandle($preset, $file, $targetPath);
+                    $this->createHandle($preset, $originalFile, $targetPath);
                 } else {
-                    copy($file, $targetFile);
+                    copy($originalFile, $targetFile);
                 }
 
                 if (file_exists($targetFile)) {
@@ -223,58 +237,54 @@ class Image extends Component
     }
 
     /**
-     * @param $source
-     * @param $file_name
-     * @return bool|string
-     */
-    /*public function createImage($source, $file_name)
-    {
-        if (!file_exists($source)) {
-            return false;
-        }
-
-        $preset = $this->presets['original'];
-
-        if (!isset($preset['cachePath'])) {
-            return false;
-        }
-
-        $file_info = pathinfo($file_name);
-
-        if (!(isset($file_info['filename']) && isset($file_info['extension']))) {
-            return false;
-        }
-
-        $file_name = self::cyrillicToLatin($file_info['filename']);
-        $file_name = str_replace(array(' ', '-'), array('_', '_'), $file_name);
-        $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
-        $extension = strtolower($file_info['extension']);
-
-        if (file_exists($file_info['dirname'] . '/' . $file_name . '.' . $extension)) {
-            $file_name = $file_name . '-' . time();
-        }
-
-        $targetPath = Yii::getAlias($preset['cachePath']);
-        $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
-        if (!file_exists($targetPath)) {
-            mkdir($targetPath, 0777, true);
-        }
-
-        copy($source, $targetFile);
-        chmod($targetFile, 0666);
-
-        return $targetFile;
-    }*/
-
-    /**
      * @param $presetName
      * @param $file
      * @param array $options
      * @return string
      */
-    public function createAbsoluteUrl($presetName, $file, $options = array())
+    public function createAbsoluteUrl($file, $presetName = 'original', $options = array())
     {
-        return Yii::$app->request->getHostInfo() . $this->createUrl($presetName, $file, $options);
+        return Yii::$app->request->getHostInfo() . $this->createUrl($file, $presetName, $options);
+    }
+
+    /**
+     * @param $preset
+     * @param $srcPath
+     * @param string $targetPath
+     * @return object
+     */
+    protected function createHandle($preset, $srcPath, $targetPath = '')
+    {
+        
+        $handle = new \upload($srcPath);
+        $handle->file_safe_name = false;
+        $handle->file_overwrite = true;
+        $handle->file_auto_rename = false;
+
+        if (isset($preset['actions']['image_watermark_path']) && isset($preset['actions']['image_watermark'])) {
+            $preset['actions']['image_watermark'] = Yii::getAlias($preset['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $preset['actions']['image_watermark'];
+        }
+
+        if (isset($preset['actions'])) {
+            foreach ($preset['actions'] as $action => $params) {
+                $handle->$action = $params;
+            }
+        }
+
+        if ($targetPath) {
+
+            $handle->process($targetPath);
+
+            if ($handle->processed) {
+                $handle->file_dst_pathname;
+            } else {
+                throw new Exception($handle->error);
+            }
+
+        }
+
+        return $handle;
+
     }
 
     /**
@@ -318,46 +328,54 @@ class Image extends Component
         }
 
         return $text;
-    }    
+    }
 
     /**
-     * @param $preset
-     * @param $srcPath
-     * @param string $targetPath
-     * @return object
+     * @param $source
+     * @return bool|string
      */
-    protected function createHandle($preset, $srcPath, $targetPath = '')
+    private function createImage($source)
     {
-        
-        $handle = new \upload($srcPath);
-        $handle->file_safe_name = false;
-        $handle->file_overwrite = true;
-        $handle->file_auto_rename = false;
-
-        if (isset($preset['actions']['image_watermark_path']) && isset($preset['actions']['image_watermark'])) {
-            $preset['actions']['image_watermark'] = Yii::getAlias($preset['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $preset['actions']['image_watermark'];
+        if (!file_exists($source)) {
+            return false;
         }
 
-        if (isset($preset['actions'])) {
-            foreach ($preset['actions'] as $action => $params) {
-                $handle->$action = $params;
+        $file_name = basename($source);
+
+        $preset = $this->presets['original'];
+
+        if (!isset($preset['cachePath'])) {
+            return false;
+        }
+
+        $file_info = pathinfo($file_name);
+
+        if (!(isset($file_info['filename']) && isset($file_info['extension']))) {
+            return false;
+        }
+
+        $file_name = self::cyrillicToLatin($file_info['filename']);
+        $file_name = str_replace(array(' ', '-'), array('_', '_'), $file_name);
+        $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
+        $extension = strtolower($file_info['extension']);
+
+        if (file_exists($file_info['dirname'] . '/' . $file_name . '.' . $extension)) {
+            $file_name = $file_name . '-' . time();
+        }
+
+        $targetPath = Yii::getAlias($preset['cachePath']);
+        $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
+
+        if(!file_exists($targetFile)) {
+            if (!file_exists($targetPath)) {
+                mkdir($targetPath, 0777, true);
             }
+
+            copy($source, $targetFile);
+            chmod($targetFile, 0666);
         }
 
-        if ($targetPath) {
-
-            $handle->process($targetPath);
-
-            if ($handle->processed) {
-                $handle->file_dst_pathname;
-            } else {
-                throw new Exception($handle->error);
-            }
-
-        }
-
-        return $handle;
-
+        return $targetFile;
     }
 
 }

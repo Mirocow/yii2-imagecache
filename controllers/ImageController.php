@@ -1,21 +1,25 @@
 <?php
 
-namespace app\modules\imageapi\controllers;
+namespace mirocow\imagecache\controllers;
 
 use Yii;
 
 class ImageController extends \yii\web\Controller
 {
 
-    public function actionGet($preset, $filename = '')
+    public function actionGet($filename = '', $preset = 'original')
     {
-        $standart_path = Yii::getAlias('@webroot/i/cat/photo/original');
+        $webrootPath = Yii::getAlias('@webroot');
 
-        $file_path = $standart_path . '/' . $filename;
+        $filename = Yii::getAlias($this->module->cachePath . '/original/' . $filename);
 
-        $path = Yii::$app->image->createUrl($preset, $file_path);
+        $targetPath = \Yii::$app->image->createPath($filename, $preset);
 
-        return $this->redirect($path);
+        if (strpos($targetPath, $webrootPath) !== false) {
+            $targetPath = substr($targetPath, strlen($webrootPath));
+        }
+
+        return $this->redirect($targetPath);
 
     }
 
