@@ -272,15 +272,13 @@ class Image extends Component
         }
 
         if ($targetPath) {
-
             $handle->process($targetPath);
-
+            $this->createIgnoreFile($targetPath);
             if ($handle->processed) {
                 $handle->file_dst_pathname;
             } else {
                 throw new Exception($handle->error);
             }
-
         }
 
         return $handle;
@@ -369,6 +367,7 @@ class Image extends Component
         if(!file_exists($targetFile)) {
             if (!file_exists($targetPath)) {
                 mkdir($targetPath, 0777, true);
+                $this->createIgnoreFile($targetPath);
             }
 
             copy($source, $targetFile);
@@ -376,6 +375,15 @@ class Image extends Component
         }
 
         return $targetFile;
+    }
+
+    /**
+     * @param $targetPath
+     */
+    private function createIgnoreFile($targetPath)
+    {
+        $ignoreData = "*\n!.gitignore";
+        file_put_contents($targetPath.'/.gitignore', $ignoreData);
     }
 
 }
