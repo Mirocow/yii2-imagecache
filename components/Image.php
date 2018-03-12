@@ -15,6 +15,7 @@ use yii\web\NotFoundHttpException;
  */
 class Image extends Component
 {
+    public $disable = false;
 
     public $presets = [
         'original' => [
@@ -178,21 +179,21 @@ class Image extends Component
      */
     public function createPath($file, $presetName = 'original', $onlyReturnPath = false)
     {
+        if($this->disable){
+            return $file;
+        }
 
         if (!isset($this->presets[$presetName])) {
             return false;
         }
 
         if (!file_exists($file)) {
-            //return false;
             $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
         }
 
-        $preset = $this->presets[$presetName];
-
         $originalFile = $this->createImage($file);
 
-        if (isset($preset)) {
+        if ($preset = $this->presets[$presetName]) {
 
             $basename = basename($originalFile);
             $targetPath = Yii::getAlias($preset['cachePath']);
