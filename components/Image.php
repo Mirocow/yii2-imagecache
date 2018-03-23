@@ -24,7 +24,7 @@ class Image extends Component
     ];
     
     public $allowedImageExtensions = ['*.*'];
-    
+
     private static $_matrix = null;
 
     public function init()
@@ -187,22 +187,37 @@ class Image extends Component
             return false;
         }
 
+        $preset = $this->presets[$presetName];
+
+        if (isset($preset['actions']['image_convert'])) {
+            $pathinfo = pathinfo($file);
+            $extension = pathinfo($pathinfo['filename'], PATHINFO_EXTENSION);
+
+            // Prepare origin file
+            if(!empty($extension) && strlen($extension) < 5 && $extension <> $preset['actions']['image_convert']) {
+                $file = str_replace('.' . $preset['actions']['image_convert'], '', $file);
+            }
+        }
+
         if (!file_exists($file)) {
             $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
         }
 
-        $originalFile = $this->createImage($file);
+        $originalFile = $this->createOriginImage($file);
 
-        if ($preset = $this->presets[$presetName]) {
+        if ($preset) {
 
             $basename = basename($originalFile);
             $targetPath = Yii::getAlias($preset['cachePath']);
-
-            if (isset($preset['actions']['image_convert'])) {
-                $basename = pathinfo($basename, PATHINFO_FILENAME) . '.' . $preset['actions']['image_convert'];
-            }
-
             $targetFile = $targetPath . '/' . $basename;
+
+            // Add new extension
+            if (isset($preset['actions']['image_convert'])) {
+                $pathinfo = pathinfo($basename);
+                if($pathinfo['extension'] <> $preset['actions']['image_convert']) {
+                    $targetFile = $targetPath . DIRECTORY_SEPARATOR . $basename . '.' . $preset['actions']['image_convert'];
+                }
+            }
 
             if ($onlyReturnPath && file_exists($originalFile)) {
 
@@ -219,7 +234,7 @@ class Image extends Component
                         }
                     }
 
-                    $this->createHandle($preset, $originalFile, $targetPath);
+                    $this->createHandle($preset, $originalFile, $targetFile, $targetPath);
                 } else {
                     copy($originalFile, $targetFile);
                 }
@@ -254,7 +269,7 @@ class Image extends Component
      * @param string $targetPath
      * @return object
      */
-    protected function createHandle($preset, $srcPath, $targetPath = '')
+    protected function createHandle($preset, $srcPath, $targetFile, $targetPath = '')
     {
         
         $handle = new \upload($srcPath);
@@ -274,9 +289,8 @@ class Image extends Component
 
         if ($targetPath) {
             $handle->process($targetPath);
-            $this->createIgnoreFile($targetPath);
             if ($handle->processed) {
-                $handle->file_dst_pathname;
+                @rename($handle->file_dst_pathname, $targetFile);
             } else {
                 throw new Exception($handle->error);
             }
@@ -333,7 +347,7 @@ class Image extends Component
      * @param $source
      * @return bool|string
      */
-    private function createImage($source)
+    private function createOriginImage($source)
     {
         if (!file_exists($source)) {
             return false;
@@ -368,7 +382,6 @@ class Image extends Component
         if(!file_exists($targetFile)) {
             if (!file_exists($targetPath)) {
                 mkdir($targetPath, 0777, true);
-                $this->createIgnoreFile($targetPath);
             }
 
             copy($source, $targetFile);
@@ -376,15 +389,6 @@ class Image extends Component
         }
 
         return $targetFile;
-    }
-
-    /**
-     * @param $targetPath
-     */
-    private function createIgnoreFile($targetPath)
-    {
-        $ignoreData = "*\n!.gitignore";
-        file_put_contents($targetPath.'/.gitignore', $ignoreData);
     }
 
 }
