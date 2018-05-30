@@ -158,7 +158,15 @@ class Image extends Component
 
         $this->webrootPath = Yii::getAlias($this->webrootPath);
 
-        $targetPath = $this->createPath($this->webrootPath . $file, $presetName, true);
+        $pathToFile = $this->webrootPath . $file;
+
+        if(!file_exists($pathToFile)){
+            if(file_exists($file)){
+                $pathToFile = $file;
+            }
+        }
+
+        $targetPath = $this->createPath($pathToFile, $presetName, true);
 
         if (strpos($targetPath, $this->webrootPath) !== false) {
             $targetPath = substr($targetPath, strlen($this->webrootPath));
