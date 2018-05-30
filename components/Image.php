@@ -17,6 +17,8 @@ class Image extends Component
 {
     public $disable = false;
 
+    public $useOriginalName = true;
+
     public $presets = [
         'original' => [
             'cachePath' => '@webroot/images/original',
@@ -24,6 +26,8 @@ class Image extends Component
     ];
     
     public $allowedImageExtensions = ['*.*'];
+
+    public $webrootPath;
 
     private static $_matrix = null;
 
@@ -145,15 +149,19 @@ class Image extends Component
     public function createUrl($file, $presetName = 'original')
     {
         if(!$file){
-            throw new NotFoundHttpException(Yii::t('app',  'File {name} not foud', ['name' => $file]));
+            $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
         }
 
-        $webrootPath = Yii::getAlias('@webroot');
+        if(!$this->webrootPath) {
+            $this->webrootPath = '@webroot';
+        }
 
-        $targetPath = $this->createPath($webrootPath . $file, $presetName, true);
+        $this->webrootPath = Yii::getAlias($this->webrootPath);
 
-        if (strpos($targetPath, $webrootPath) !== false) {
-            $targetPath = substr($targetPath, strlen($webrootPath));
+        $targetPath = $this->createPath($this->webrootPath . $file, $presetName, true);
+
+        if (strpos($targetPath, $this->webrootPath) !== false) {
+            $targetPath = substr($targetPath, strlen($this->webrootPath));
         }
 
         return $targetPath;
@@ -367,16 +375,23 @@ class Image extends Component
             return false;
         }
 
-        $file_name = self::cyrillicToLatin($file_info['filename']);
-        $file_name = str_replace(array(' ', '-'), array('_', '_'), $file_name);
-        $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
-        $extension = strtolower($file_info['extension']);
+        $extension = strtolower($file_info[ 'extension' ]);
+        $targetPath = Yii::getAlias($preset['cachePath']);
 
-        if (file_exists($file_info['dirname'] . '/' . $file_name . '.' . $extension)) {
-            $file_name = $file_name . '-' . time();
+        if($this->useOriginalName) {
+            $file_name = self::cyrillicToLatin($file_info[ 'filename' ]);
+            $file_name = str_replace([' ', '-'], ['_', '_'], $file_name);
+            $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
+        } else {
+            //$file_name = md5($file_name);
+            //$targetPath = $targetPath . DIRECTORY_SEPARATOR . substr($file_name, 0, 2);
+            throw new Exception('Not yet implemented');
         }
 
-        $targetPath = Yii::getAlias($preset['cachePath']);
+        if (file_exists($file_info[ 'dirname' ].'/'.$file_name.'.'.$extension)) {
+            $file_name = $file_name.'-'.time();
+        }
+
         $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
 
         if(!file_exists($targetFile)) {
