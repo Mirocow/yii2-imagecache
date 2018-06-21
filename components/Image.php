@@ -348,7 +348,7 @@ class Image extends Component
                 $maxlength, '<br>', false)), 0, 1));
 
         foreach (self::$_matrix as $from => $to) {
-            $text = mb_eregi_replace($from, $to, $text);
+            $text = preg_replace($from, $to, $text);
         }
 
         // Optionally convert to lower case.
