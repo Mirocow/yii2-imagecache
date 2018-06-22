@@ -348,7 +348,7 @@ class Image extends Component
                 $maxlength, '<br>', false)), 0, 1));
 
         foreach (self::$_matrix as $from => $to) {
-            $text = preg_replace('/('.$from.')/iu', $to, $text);
+            $text = preg_replace('/'.$from.'/iu', $to, $text);
         }
 
         // Optionally convert to lower case.
