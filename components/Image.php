@@ -2,6 +2,7 @@
 
 namespace mirocow\imagecache\components;
 
+use mirocow\imagecache\helpers\FilePathHelper;
 use Yii;
 use yii\base\Component;
 use yii\base\Exception;
@@ -215,11 +216,11 @@ class Image extends Component
             }
         }
 
-        if (!file_exists($file)) {
-            $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
-        }
-
         $originalFile = $this->createOriginImage($file);
+
+        if (!file_exists($originalFile)) {
+            $originalFile = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
+        }
 
         if ($preset) {
 
@@ -365,6 +366,10 @@ class Image extends Component
      */
     private function createOriginImage($source)
     {
+        if(!file_exists($source)){
+            $source = FilePathHelper::getAbsolutePath($source);
+        }
+
         if (!file_exists($source)) {
             return false;
         }
@@ -401,7 +406,7 @@ class Image extends Component
         }
 
         $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
-
+        $targetFile = FilePathHelper::getAbsolutePath($targetFile);
         if(!file_exists($targetFile)) {
             if (!file_exists($targetPath)) {
                 mkdir($targetPath, 0777, true);
