@@ -15,7 +15,15 @@ class FilePathHelper
 
         $info = pathinfo($filePath);
 
+        if(!isset($info['dirname'])){
+            return false;
+        }
+
         $dirname = $info['dirname'];
+
+        if(!isset($info['extension'])){
+            return false;
+        }
 
         $extension = $info['extension'];
 
