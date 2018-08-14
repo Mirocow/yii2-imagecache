@@ -26,7 +26,7 @@ class Image extends Component
         ],
     ];
     
-    public $allowedImageExtensions = ['*.*'];
+    public $allowedImageExtensions = ['*'];
 
     public $webrootPath;
 
@@ -389,6 +389,13 @@ class Image extends Component
         }
 
         $extension = strtolower($file_info[ 'extension' ]);
+
+        if($this->allowedImageExtensions <> '*') {
+            if (!in_array($extension, $this->allowedImageExtensions)) {
+                throw new Exception('This extension is not allowed');
+            }
+        }
+
         $targetPath = Yii::getAlias($preset['cachePath']);
 
         if($this->useOriginalName) {
@@ -396,8 +403,6 @@ class Image extends Component
             $file_name = str_replace([' ', '-'], ['_', '_'], $file_name);
             $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
         } else {
-            //$file_name = md5($file_name);
-            //$targetPath = $targetPath . DIRECTORY_SEPARATOR . substr($file_name, 0, 2);
             throw new Exception('Not yet implemented');
         }
 
