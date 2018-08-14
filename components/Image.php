@@ -130,13 +130,24 @@ class Image extends Component
     }
 
     /**
+     * @param $path
+     * @return $this
+     */
+    public function setWebRootPath($path)
+    {
+        $this->webrootPath = $path;
+
+        return $this;
+    }
+
+    /**
      * Basic function for create a derived image from a file using a preset declared in
      * configuration
      *
      * @param $file origin image file to create the derived image
      * @param $presetName Name of the preset declared in configuration under presets array
      * @see https://www.verot.net/php_class_upload_samples.htm
-     * in the way:
+     * @example:
      * <pre>
      *    '640x480' => [
      *      'cachePath' => '@webroot/images/640x480',
@@ -183,7 +194,7 @@ class Image extends Component
      * @param $file origin image file to create the derived image
      * @param $presetName Name of the preset declared in configuration under presets array
      * @see https://www.verot.net/php_class_upload_samples.htm
-     * in the way:
+     * @example:
      * <pre>
      *    '640x480' => [
      *      'cachePath' => '@webroot/images/640x480',
@@ -274,6 +285,7 @@ class Image extends Component
      * @param $file
      * @param array $options
      * @return string
+     * @example createAbsoluteUrl();
      */
     public function createAbsoluteUrl($file, $presetName = 'original', $options = array())
     {
@@ -285,6 +297,7 @@ class Image extends Component
      * @param $srcPath
      * @param string $targetPath
      * @return object
+     * @example createHandle();
      */
     protected function createHandle($preset, $srcPath, $targetFile, $targetPath = '')
     {
@@ -363,6 +376,7 @@ class Image extends Component
     /**
      * @param $source
      * @return bool|string
+     * @throws Exception
      */
     private function createOriginImage($source)
     {
