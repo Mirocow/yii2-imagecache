@@ -30,10 +30,14 @@ class Image extends Component
 
     public $webrootPath;
 
+    public $host;
+
     private static $_matrix = null;
 
     public function init()
     {
+        $this->host = Yii::$app->request->getHostInfo();
+
         self::$_matrix = [
             "й" => "i",
             "ц" => "c",
@@ -136,6 +140,17 @@ class Image extends Component
     public function setWebRootPath($path)
     {
         $this->webrootPath = $path;
+
+        return $this;
+    }
+
+    /**
+     * @param $host
+     * @return $this
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
 
         return $this;
     }
@@ -285,11 +300,18 @@ class Image extends Component
      * @param $file
      * @param array $options
      * @return string
-     * @example createAbsoluteUrl();
+     * @see https://www.verot.net/php_class_upload_samples.htm
+     * @example:
+     * <pre>
+     *    '640x480' => [
+     *      'cachePath' => '@webroot/images/640x480',
+     *      'actions' => ['image_x' => 640, 'image_y' => 480, 'image_ratio_crop' => true],
+     *    ],
+     * </pre>
      */
     public function createAbsoluteUrl($file, $presetName = 'original')
     {
-        return Yii::$app->request->getHostInfo() . $this->createUrl($file, $presetName);
+        return $this->host . $this->createUrl($file, $presetName);
     }
 
     /**
