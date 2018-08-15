@@ -287,9 +287,9 @@ class Image extends Component
      * @return string
      * @example createAbsoluteUrl();
      */
-    public function createAbsoluteUrl($file, $presetName = 'original', $options = array())
+    public function createAbsoluteUrl($file, $presetName = 'original')
     {
-        return Yii::$app->request->getHostInfo() . $this->createUrl($file, $presetName, $options);
+        return Yii::$app->request->getHostInfo() . $this->createUrl($file, $presetName);
     }
 
     /**
