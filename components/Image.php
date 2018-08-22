@@ -2,6 +2,7 @@
 
 namespace mirocow\imagecache\components;
 
+use mirocow\imagecache\contracts\handlerInterface;
 use mirocow\imagecache\helpers\FilePathHelper;
 use Yii;
 use yii\base\Component;
@@ -31,6 +32,10 @@ class Image extends Component
     public $webrootPath;
 
     public $host;
+
+    public $chmodDir = 0777;
+
+    public $chmodFile = 0666;
 
     private static $_matrix = null;
 
@@ -208,6 +213,7 @@ class Image extends Component
      *
      * @param $file origin image file to create the derived image
      * @param $presetName Name of the preset declared in configuration under presets array
+     * @param $force Without image cache
      * @see https://www.verot.net/php_class_upload_samples.htm
      * @example:
      * <pre>
@@ -220,7 +226,7 @@ class Image extends Component
      * @return the path to the cached derived image (if it does not exist it'll be generated
      *   transparently)
      */
-    public function createPath($file, $presetName = 'original', $onlyReturnPath = false)
+    public function createPath($file, $presetName = 'original', $onlyReturnPath = false, $force = false)
     {
         if($this->disable){
             return $file;
@@ -262,7 +268,7 @@ class Image extends Component
                 }
             }
 
-            if ($onlyReturnPath && file_exists($originalFile)) {
+            if (!$force && $onlyReturnPath && file_exists($originalFile)) {
 
                 return $targetFile;
 
@@ -277,7 +283,7 @@ class Image extends Component
                         }
                     }
 
-                    $this->createHandle($preset, $originalFile, $targetFile, $targetPath);
+                    $this->runHandler($preset, $originalFile, $targetFile, $targetPath);
                 } else {
                     copy($originalFile, $targetFile);
                 }
@@ -317,39 +323,32 @@ class Image extends Component
     /**
      * @param $preset
      * @param $srcPath
+     * @param $targetFile
      * @param string $targetPath
-     * @return object
-     * @example createHandle();
+     * @return mixed
+     * @throws \Exception
      */
-    protected function createHandle($preset, $srcPath, $targetFile, $targetPath = '')
+    protected function runHandler($preset, $srcPath, $targetFile, $targetPath = '')
     {
-        
-        $handle = new \upload($srcPath);
-        $handle->file_safe_name = false;
-        $handle->file_overwrite = true;
-        $handle->file_auto_rename = false;
-
-        if (isset($preset['actions']['image_watermark_path']) && isset($preset['actions']['image_watermark'])) {
-            $preset['actions']['image_watermark'] = Yii::getAlias($preset['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $preset['actions']['image_watermark'];
+        if(empty($preset['hadler'])){
+            $preset['hadler'] = \mirocow\imagecache\components\handlers\classUploadHandler::class;
         }
 
-        if (isset($preset['actions'])) {
-            foreach ($preset['actions'] as $action => $params) {
-                $handle->$action = $params;
-            }
+        /** @var handlerInterface $handler */
+        $handler = new $preset['hadler'];
+
+        if(!($handler instanceof handlerInterface)){
+            throw new \Exception();
         }
 
-        if ($targetPath) {
-            $handle->process($targetPath);
-            if ($handle->processed) {
-                @rename($handle->file_dst_pathname, $targetFile);
-            } else {
-                throw new Exception($handle->error);
-            }
+        if(!file_exists($targetPath)){
+            mkdir($targetPath, (int) $this->chmodDir, true);
         }
 
-        return $handle;
+        $handler->preset = $preset;
+        $handler->targetPath = $targetPath;
 
+        $handler->runHandler($srcPath, $targetFile);
     }
 
     /**
@@ -450,11 +449,11 @@ class Image extends Component
         $targetFile = FilePathHelper::getAbsolutePath($targetFile);
         if(!file_exists($targetFile)) {
             if (!file_exists($targetPath)) {
-                mkdir($targetPath, 0777, true);
+                mkdir($targetPath, (int) $this->chmodDir, true);
             }
 
             copy($source, $targetFile);
-            chmod($targetFile, 0666);
+            chmod($targetFile, (int) $this->chmodFile);
         }
 
         return $targetFile;

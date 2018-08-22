@@ -13,7 +13,7 @@ class ImageController extends \yii\web\Controller
 
         $filename = Yii::getAlias($this->module->cachePath . '/original/' . $filename);
 
-        $targetPath = \Yii::$app->image->createPath($filename, $preset);
+        $targetPath = \Yii::$app->image->createPath($filename, $preset, false, \Yii::$app->request->get('nocache'));
 
         if (strpos($targetPath, $webrootPath) !== false) {
             $targetPath = substr($targetPath, strlen($webrootPath));

@@ -53,3 +53,16 @@ return [
 ```
 
 ### Presets
+
+### Libraries
+
+* https://www.verot.net/php_class_upload_samples.htm - has handler
+* http://image.intervention.io - has handler
+* https://phpimageworkshop.com/
+* http://nielse63.github.io/php-image-cache/#usage
+* http://glide.thephpleague.com/
+* https://github.com/claviska/SimpleImage
+* https://imagine.readthedocs.io/en/latest/index.html
+* https://kosinix.github.io/grafika/
+* https://github.com/Gregwar/Image - has handler
+* https://github.com/Treinetic/ImageArtist
