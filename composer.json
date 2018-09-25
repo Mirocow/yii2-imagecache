@@ -12,8 +12,8 @@
     "php": ">=5.4.0",
     "yiisoft/yii2": "~2.0.13",
     "verot/class.upload.php": "dev-master",
-    "Intervention/image": "dev-master",
-    "gregwar/image": "dev-master"
+    "Intervention/image": "2.*",
+    "gregwar/image": "2.*"
   },
   "autoload": {
     "psr-4": {
