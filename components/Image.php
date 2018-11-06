@@ -243,7 +243,7 @@ class Image extends Component
             $extension = pathinfo($pathinfo['filename'], PATHINFO_EXTENSION);
 
             // Prepare origin file
-            if(!empty($extension) && strlen($extension) < 5 && $extension <> $preset['actions']['image_convert']) {
+            if(!empty($extension) && $this->isAllowedToConvertExtension($extension) && $extension <> $preset['actions']['image_convert']) {
                 $file = str_replace('.' . $preset['actions']['image_convert'], '', $file);
             }
         }
@@ -457,6 +457,20 @@ class Image extends Component
         }
 
         return $targetFile;
+    }
+
+    /**
+     * @param $extension
+     *
+     * @return bool
+     */
+    private function isAllowedToConvertExtension($extension)
+    {
+        return in_array($extension, [
+            'png',
+            'jpg',
+            'jpeg',
+        ]);
     }
 
 }
