@@ -447,7 +447,9 @@ class Image extends Component
 
         $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
         $targetFile = FilePathHelper::getAbsolutePath($targetFile);
+        
         if(!file_exists($targetFile)) {
+            $targetPath = dirname($targetFile);
             if (!file_exists($targetPath)) {
                 mkdir($targetPath, (int) $this->chmodDir, true);
             }

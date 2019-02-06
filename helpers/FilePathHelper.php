@@ -39,10 +39,6 @@ class FilePathHelper
 
         $pathFile =  substr($fileName, 1, 2) . '/' . substr($fileName, 4, 2);
 
-        if (!is_dir($dirname . DIRECTORY_SEPARATOR . $pathFile)){
-            mkdir($dirname . DIRECTORY_SEPARATOR . $pathFile, 0775, true);
-        }
-
         return $dirname . DIRECTORY_SEPARATOR . $pathFile . DIRECTORY_SEPARATOR . $fileName;
     }
 
