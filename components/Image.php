@@ -41,8 +41,6 @@ class Image extends Component
 
     public function init()
     {
-        $this->host = Yii::$app->request->getHostInfo();
-
         self::$_matrix = [
             "й" => "i",
             "ц" => "c",
@@ -158,6 +156,15 @@ class Image extends Component
         $this->host = $host;
 
         return $this;
+    }
+
+    public function getHost()
+    {
+        if(!$this->host) {
+            if (!Yii::$app->request->isConsoleRequest) {
+                $this->setHost(Yii::$app->request->getHostInfo());
+            }
+        }
     }
 
     /**
@@ -317,7 +324,7 @@ class Image extends Component
      */
     public function createAbsoluteUrl($file, $presetName = 'original')
     {
-        return $this->host . $this->createUrl($file, $presetName);
+        return $this->getHost() . $this->createUrl($file, $presetName);
     }
 
     /**
