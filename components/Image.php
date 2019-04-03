@@ -17,28 +17,58 @@ use yii\web\NotFoundHttpException;
  */
 class Image extends Component
 {
+    /**
+     * @var bool 
+     */
     public $disable = false;
 
+    /**
+     * @var bool
+     */
     public $useOriginalName = true;
 
+    /**
+     * @var array
+     */
     public $presets = [
         'original' => [
             'cachePath' => '@webroot/images/original',
         ],
     ];
-    
+
+    /**
+     * @var array
+     */
     public $allowedImageExtensions = ['*'];
 
+    /**
+     * @var string
+     */
     public $webrootPath;
 
+    /**
+     * @var string
+     */
     public $host;
 
+    /**
+     * @var int
+     */
     public $chmodDir = 0777;
 
+    /**
+     * @var int
+     */
     public $chmodFile = 0666;
 
+    /**
+     * @var null
+     */
     private static $_matrix = null;
 
+    /**
+     * @inheritDoc
+     */
     public function init()
     {
         self::$_matrix = [
@@ -148,7 +178,7 @@ class Image extends Component
     }
 
     /**
-     * @param $host
+     * @param string $host
      * @return $this
      */
     public function setHost($host)
@@ -158,6 +188,9 @@ class Image extends Component
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getHost()
     {
         if(!$this->host) {
@@ -165,6 +198,8 @@ class Image extends Component
                 $this->setHost(Yii::$app->request->getHostInfo());
             }
         }
+
+        return $this->host;
     }
 
     /**
