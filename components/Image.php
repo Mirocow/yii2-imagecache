@@ -232,6 +232,12 @@ class Image extends Component
 
         $this->webrootPath = Yii::getAlias($this->webrootPath);
 
+        // If absolute url
+        $urlInfo = parse_url($file);
+        if(!empty($urlInfo['path'])){
+            $file = $urlInfo['path'];
+        }
+
         $pathToFile = $this->webrootPath . $file;
 
         if(!file_exists($pathToFile)){
