@@ -2,6 +2,10 @@
 
 # Install
 
+```bash
+$ composer require --prefer-dist mirocow/yii2-imagecache
+```
+
 # Configuration
 
 ## Nginx
