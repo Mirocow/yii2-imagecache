@@ -9,11 +9,12 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "php": ">=5.4.0",
+    "php": ">=7.0.0",
     "yiisoft/yii2": "~2.0.13",
     "verot/class.upload.php": "dev-master",
-    "Intervention/image": "2.*",
-    "gregwar/image": "2.*"
+    "Intervention/image": "dev-master",
+    "imagine/imagine": "dev-master",
+    "gregwar/image": "dev-master"
   },
   "autoload": {
     "psr-4": {
