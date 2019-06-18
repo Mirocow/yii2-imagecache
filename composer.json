@@ -14,7 +14,7 @@
     "verot/class.upload.php": "dev-master",
     "Intervention/image": "dev-master",
     "imagine/imagine": "dev-master",
-    "gregwar/image": "dev-master"
+    "gregwar/image": "2.*"
   },
   "autoload": {
     "psr-4": {
