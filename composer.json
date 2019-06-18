@@ -12,9 +12,9 @@
     "php": ">=7.0.0",
     "yiisoft/yii2": ">=2.0",
     "verot/class.upload.php": "dev-master",
-    "Intervention/image": "dev-master",
-    "imagine/imagine": "dev-master",
-    "gregwar/image": "2.*"
+    "Intervention/image": "^2",
+    "imagine/imagine": "^1",
+    "gregwar/image": "^2"
   },
   "autoload": {
     "psr-4": {
