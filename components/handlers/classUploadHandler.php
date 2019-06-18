@@ -3,6 +3,7 @@
 namespace mirocow\imagecache\components\handlers;
 
 use mirocow\imagecache\contracts\handlerInterface;
+use yii\base\Exception;
 
 /**
  * Class classUploadHadler
