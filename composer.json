@@ -2,7 +2,7 @@
   "name": "mirocow/yii2-imagecache",
   "description": "Yii2 imagecache extension",
   "type": "yii2-extension",
-  "license": "GPL-v3",
+  "license": "MIT",
   "support": {
     "issues": "https://github.com/mirocow/yii2-imagecache",
     "source": "https://github.com/mirocow/yii2-imagecache"
