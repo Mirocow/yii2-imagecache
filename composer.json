@@ -10,7 +10,7 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=7.0.0",
-    "yiisoft/yii2": "~2.0.13",
+    "yiisoft/yii2": "~2.0.21",
     "verot/class.upload.php": "dev-master",
     "Intervention/image": "dev-master",
     "imagine/imagine": "dev-master",
