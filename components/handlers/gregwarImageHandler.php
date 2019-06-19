@@ -4,6 +4,7 @@ namespace mirocow\imagecache\components\handlers;
 
 use mirocow\imagecache\contracts\handlerInterface;
 use Gregwar\Image\Image;
+use yii\base\Exception;
 
 /**
  * Class gregwarImageHandler
@@ -12,8 +13,20 @@ use Gregwar\Image\Image;
  */
 class gregwarImageHandler implements handlerInterface
 {
-    public $preset;
+    /**
+     * @var array
+     */
+    public $presets = [];
+
+    /**
+     * @var string
+     */
     public $targetPath;
+
+    /**
+     * @var callable|null
+     */
+    public $callback;
 
     /**
      * @param string $srcPath
@@ -22,23 +35,6 @@ class gregwarImageHandler implements handlerInterface
      */
     public function runHandler(string $srcPath, string $targetFile)
     {
-        /** @var Image $manager */
-        $manager = Image::open($this->config);
-
-        if (isset($this->preset['actions']['image_watermark_path']) && isset($this->preset['actions']['image_watermark'])) {
-            $watermark = Image::open(Yii::getAlias($this->preset['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $this->preset['actions']['image_watermark']);
-
-            $manager->merge($watermark, $manager->width()-$watermark->width(),
-                $manager->height()-$watermark->height());
-        }
-
-        if (isset($this->preset['actions'])) {
-            foreach ($this->preset['actions'] as $action => $params) {
-                call_user_func_array([$image, $action], $params);
-            }
-        }
-
-        $image->save($targetFile);
-
+        throw new Exception('Not yet implemented');
     }
 }

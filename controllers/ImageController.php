@@ -2,6 +2,7 @@
 
 namespace mirocow\imagecache\controllers;
 
+use mirocow\imagecache\components\Image;
 use Yii;
 use yii\helpers\FileHelper;
 
@@ -15,7 +16,10 @@ class ImageController extends \yii\web\Controller
 
         $filename = Yii::getAlias($this->module->cachePath . '/original/' . $filename);
 
-        $targetPath = \Yii::$app->image->createPath($filename, $preset, false, \Yii::$app->request->get('nocache'));
+        /** @var Image $image */
+        $image = Yii::$app->get('image');
+
+        $targetPath = $image->createPath($filename, $preset, false, \Yii::$app->request->get('nocache'));
 
         $mimeType = FileHelper::getMimeTypeByExtension($targetPath);
 

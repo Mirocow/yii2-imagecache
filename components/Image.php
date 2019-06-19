@@ -7,7 +7,6 @@ use mirocow\imagecache\helpers\FilePathHelper;
 use Yii;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\web\NotFoundHttpException;
 
 /**
  * Class Image
@@ -299,7 +298,7 @@ class Image extends Component
         $originalFile = $this->createOriginImage($file);
 
         if (!file_exists($originalFile)) {
-            $originalFile = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
+            $originalFile = Yii::getAlias('@mirocow/imagecache/assets/no_image_available.png');
         }
 
         if ($preset) {
@@ -317,25 +316,13 @@ class Image extends Component
             }
 
             if (!$force && $onlyReturnPath && file_exists($originalFile)) {
-
                 return $targetFile;
-
             } else {
-
                 if (isset($preset['actions'])) {
-
-                    if (isset($preset['actions']['image_increase']) && $preset['actions']['image_increase'] === false) {
-                        $size = self::getSize($originalFile);
-                        if ($size[0] < $preset['actions']['image_x'] || $size[1] < $preset['actions']['image_y']) {
-                            $preset['actions']['image_resize'] = false;
-                        }
-                    }
-
                     $this->runHandler($preset, $originalFile, $targetFile, $targetPath);
                 } else {
                     copy($originalFile, $targetFile);
                 }
-
                 if (file_exists($targetFile)) {
                     chmod($targetFile, 0666);
                     return $targetFile;
@@ -373,44 +360,32 @@ class Image extends Component
      * @param $srcPath
      * @param $targetFile
      * @param string $targetPath
-     * @return mixed
-     * @throws \Exception
+     *
+     * @throws Exception
      */
     protected function runHandler($preset, $srcPath, $targetFile, $targetPath = '')
     {
-        if(empty($preset['class'])){
+        if (empty($preset['class'])) {
             $preset['class'] = \mirocow\imagecache\components\handlers\classUploadHandler::class;
         }
+        try {
+            /** @var handlerInterface $handler */
+            $handler = Yii::createObject($preset);
 
-        /** @var handlerInterface $handler */
-        $handler = Yii::createObject($preset);
+            if(!$handler instanceof handlerInterface){
+                throw new Exception("Handler class not found");
+            }
 
-        if(!($handler instanceof handlerInterface)){
-            throw new \Exception();
-        }
+            if (!file_exists($targetPath)) {
+                mkdir($targetPath, (int)$this->chmodDir, true);
+            }
 
-        if(!file_exists($targetPath)){
-            mkdir($targetPath, (int) $this->chmodDir, true);
-        }
+            $handler->presets = $preset;
+            $handler->targetPath = $targetPath;
 
-        $handler->preset = $preset;
-        $handler->targetPath = $targetPath;
-
-        $handler->runHandler($srcPath, $targetFile);
-    }
-
-    /**
-     * @param $file
-     * @return array
-     */
-    private static function getSize($file)
-    {
-        $cmd = "identify -format \"%w|%h|%k\" " . escapeshellarg($file) . " 2>&1";
-        $returnVal = 0;
-        $output = array();
-        exec($cmd, $output, $returnVal);
-        if ($returnVal == 0 && count($output) == 1) {
-            return explode('|', $output[0]);
+            $handler->runHandler($srcPath, $targetFile);
+        } catch (Exception $e) {
+            throw $e;
         }
     }
 
@@ -493,7 +468,7 @@ class Image extends Component
             $file_name = $file_name.'-'.time();
         }
 
-        $targetFile = $targetPath . '/' . $file_name . '.' . $extension;
+        $targetFile = $targetPath.'/'.$file_name.'.'.$extension;
         $targetFile = FilePathHelper::getAbsolutePath($targetFile);
         
         if(!file_exists($targetFile)) {

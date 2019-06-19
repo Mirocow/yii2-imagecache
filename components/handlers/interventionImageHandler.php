@@ -2,6 +2,7 @@
 
 namespace mirocow\imagecache\components\handlers;
 
+use Intervention\Image\Image;
 use mirocow\imagecache\contracts\handlerInterface;
 use Intervention\Image\ImageManager;
 
@@ -13,9 +14,25 @@ use Intervention\Image\ImageManager;
  */
 class interventionImageHandler implements handlerInterface
 {
+    /**
+     * @var array 
+     */
     public $config = ['driver' => 'imagick'];
-    public $preset;
+    
+    /**
+     * @var array
+     */
+    public $preset = [];
+
+    /**
+     * @var string
+     */
     public $targetPath;
+
+    /**
+     * @var callable|null
+     */
+    public $callback;
 
     /**
      * @param string $srcPath
@@ -26,35 +43,40 @@ class interventionImageHandler implements handlerInterface
     {
         $manager = new ImageManager($this->config);
 
-        $image = $manager->make($srcPath);
+        /** @var Image $handle */
+        $handle = $manager->make($srcPath);
 
-        if (isset($this->preset['actions']['image_watermark_path']) && isset($this->preset['actions']['image_watermark'])) {
-            $image->insert(Yii::getAlias($this->preset['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $this->preset['actions']['image_watermark']);
+        if (isset($this->presets['actions']['image_watermark_path']) && isset($this->presets['actions']['image_watermark'])) {
+            $handle->insert(Yii::getAlias($this->presets['actions']['image_watermark_path']) . DIRECTORY_SEPARATOR . $this->presets['actions']['image_watermark']);
         }
 
-        if(isset($this->preset['actions']['image_convert'])){
-            if(isset($this->preset['actions']['jpeg_quality'])){
-                $quality = $this->preset['actions']['jpeg_quality'];
-                unset($this->preset['actions']['jpeg_quality']);
+        if(isset($this->presets['actions']['image_convert'])){
+            if(isset($this->presets['actions']['jpeg_quality'])){
+                $quality = $this->presets['actions']['jpeg_quality'];
+                unset($this->presets['actions']['jpeg_quality']);
             }
-            if(isset($this->preset['actions']['png_compression'])){
-                $quality = $this->preset['actions']['png_compression'];
-                unset($this->preset['actions']['png_compression']);
+            if(isset($this->presets['actions']['png_compression'])){
+                $quality = $this->presets['actions']['png_compression'];
+                unset($this->presets['actions']['png_compression']);
             }
             if(empty($quality)){
                 $quality = 60;
             }
-            $image->encode($this->preset['actions']['image_convert'], $quality);
-            unset($this->preset['actions']['image_convert']);
+            $handle->encode($this->presets['actions']['image_convert'], $quality);
+            unset($this->presets['actions']['image_convert']);
         }
 
-        if (isset($this->preset['actions'])) {
-            foreach ($this->preset['actions'] as $action => $params) {
-                call_user_func_array([$image, $action], $params);
+        if ($this->callback instanceof \Closure || is_callable($this->callback)) {
+            call_user_func($this->callback, $handle, $this->presets);
+        }
+
+        if (isset($this->presets['actions'])) {
+            foreach ($this->presets['actions'] as $action => $params) {
+                call_user_func_array([$handle, $action], $params);
             }
         }
 
-        $image->save($targetFile);
+        $handle->save($targetFile);
 
     }
 }
