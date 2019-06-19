@@ -15,6 +15,7 @@ class classUploadHandler implements handlerInterface
 {
     public $preset;
     public $targetPath;
+    public $max_filesize = '52428800';
 
     /**
      * @param string $srcPath
@@ -36,6 +37,9 @@ class classUploadHandler implements handlerInterface
                 $handle->$action = $params;
             }
         }
+
+        $handle->file_max_size_raw = trim($this->max_filesize);
+        $handle->file_max_size = $handle->getsize($handle->file_max_size_raw);
 
         if ($this->targetPath) {
             $handle->process($this->targetPath);

@@ -378,12 +378,12 @@ class Image extends Component
      */
     protected function runHandler($preset, $srcPath, $targetFile, $targetPath = '')
     {
-        if(empty($preset['hadler'])){
-            $preset['hadler'] = \mirocow\imagecache\components\handlers\classUploadHandler::class;
+        if(empty($preset['class'])){
+            $preset['class'] = \mirocow\imagecache\components\handlers\classUploadHandler::class;
         }
 
         /** @var handlerInterface $handler */
-        $handler = new $preset['hadler'];
+        $handler = Yii::createObject($preset);
 
         if(!($handler instanceof handlerInterface)){
             throw new \Exception();
