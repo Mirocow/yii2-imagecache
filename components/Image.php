@@ -222,7 +222,7 @@ class Image extends Component
     public function createUrl($file, $presetName = 'original')
     {
         if(!$file){
-            $file = Yii::getAlias('@vendor/mirocow/yii2-imagecache/assets/no_image_available.png');
+            $file = Yii::getAlias('@mirocow/imagecache/assets/no_image_available.png');
         }
 
         if(!$this->webrootPath) {
@@ -286,8 +286,8 @@ class Image extends Component
         $preset = $this->presets[$presetName];
 
         if (isset($preset['actions']['image_convert'])) {
-            $pathinfo = pathinfo($file);
-            $extension = pathinfo($pathinfo['filename'], PATHINFO_EXTENSION);
+            $pathInfo = pathinfo($file);
+            $extension = pathinfo($pathInfo['basename'], PATHINFO_EXTENSION);
 
             // Prepare origin file
             if(!empty($extension) && $this->isAllowedToConvertExtension($extension) && $extension <> $preset['actions']['image_convert']) {
@@ -307,13 +307,13 @@ class Image extends Component
             $targetPath = Yii::getAlias($preset['cachePath']);
             $targetFile = $targetPath . '/' . $basename;
 
-            // Add new extension
-            if (isset($preset['actions']['image_convert'])) {
-                $pathinfo = pathinfo($basename);
-                if($pathinfo['extension'] <> $preset['actions']['image_convert']) {
+            // Convert into ...
+            /*if (isset($preset['actions']['image_convert'])) {
+                $pathInfo = pathinfo($basename);
+                if($pathInfo['extension'] <> $preset['actions']['image_convert']) {
                     $targetFile = $targetPath . DIRECTORY_SEPARATOR . $basename . '.' . $preset['actions']['image_convert'];
                 }
-            }
+            }*/
 
             if (!$force && $onlyReturnPath && file_exists($originalFile)) {
                 return $targetFile;
@@ -440,13 +440,13 @@ class Image extends Component
             return false;
         }
 
-        $file_info = pathinfo($file_name);
+        $pathInfo = pathinfo($file_name);
 
-        if (!(isset($file_info['filename']) && isset($file_info['extension']))) {
+        if (!(isset($pathInfo['filename']) && isset($pathInfo['extension']))) {
             return false;
         }
 
-        $extension = strtolower($file_info[ 'extension' ]);
+        $extension = strtolower($pathInfo[ 'extension' ]);
 
         if($this->allowedImageExtensions <> '*') {
             if (!in_array($extension, $this->allowedImageExtensions)) {
@@ -457,14 +457,14 @@ class Image extends Component
         $targetPath = Yii::getAlias($preset['cachePath']);
 
         if($this->useOriginalName) {
-            $file_name = self::cyrillicToLatin($file_info[ 'filename' ]);
+            $file_name = self::cyrillicToLatin($pathInfo[ 'filename' ]);
             $file_name = str_replace([' ', '-'], ['_', '_'], $file_name);
             $file_name = preg_replace('/[^A-Za-z0-9_]/', '', $file_name);
         } else {
             throw new Exception('Not yet implemented');
         }
 
-        if (file_exists($file_info[ 'dirname' ].'/'.$file_name.'.'.$extension)) {
+        if (file_exists($pathInfo[ 'dirname' ].'/'.$file_name.'.'.$extension)) {
             $file_name = $file_name.'-'.time();
         }
 
