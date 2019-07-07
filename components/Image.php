@@ -63,7 +63,7 @@ class Image extends Component
     /**
      * @var string 
      */
-    public $pathImgNotFound = '\'@mirocow/imagecache/assets/no_image_available.png\'';
+    public $pathImgNotFound = '@mirocow/imagecache/assets/no_image_available.png';
 
     /**
      * @var null
