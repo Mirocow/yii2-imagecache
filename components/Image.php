@@ -61,6 +61,11 @@ class Image extends Component
     public $chmodFile = 0666;
 
     /**
+     * @var string 
+     */
+    public $pathImgNotFound = '\'@mirocow/imagecache/assets/no_image_available.png\'';
+
+    /**
      * @var null
      */
     private static $_matrix = null;
@@ -222,7 +227,7 @@ class Image extends Component
     public function createUrl($file, $presetName = 'original')
     {
         if(!$file){
-            $file = Yii::getAlias('@mirocow/imagecache/assets/no_image_available.png');
+            $file = Yii::getAlias($this->pathImgNotFound);
         }
 
         if(!$this->webrootPath) {
@@ -298,7 +303,7 @@ class Image extends Component
         $originalFile = $this->createOriginImage($file);
 
         if (!file_exists($originalFile)) {
-            $originalFile = Yii::getAlias('@mirocow/imagecache/assets/no_image_available.png');
+            $originalFile = Yii::getAlias($this->pathImgNotFound);
         }
 
         if ($preset) {
