@@ -2,6 +2,7 @@
 
 namespace mirocow\imagecache\components\handlers;
 
+use Verot\Upload\Upload;
 use mirocow\imagecache\contracts\handlerInterface;
 use yii\base\Exception;
 
@@ -46,7 +47,7 @@ class classUploadHandler implements handlerInterface
             }
         }
 
-        $handle = new \Verot\Upload\upload($srcPath);
+        $handle = new Upload($srcPath);
         $handle->file_safe_name = false;
         $handle->file_overwrite = true;
         $handle->file_auto_rename = false;
