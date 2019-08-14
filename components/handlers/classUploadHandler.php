@@ -46,7 +46,7 @@ class classUploadHandler implements handlerInterface
             }
         }
 
-        $handle = new \upload($srcPath);
+        $handle = new \Verot\Upload\upload($srcPath);
         $handle->file_safe_name = false;
         $handle->file_overwrite = true;
         $handle->file_auto_rename = false;
